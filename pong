@@ -1,0 +1,107 @@
+import pygame as pg
+import random as rm
+
+
+def start():
+    s = rm.randint(0, 100)
+    if s % 2 == 0:
+        return 2
+    else:
+        return -2
+
+
+pg.init()
+
+run = True
+d_size = [600, 600]
+black = pg.Color(0, 0, 0)
+white = pg.Color(255, 255, 255)
+score_player_1 = 0
+score_player_2 = 0
+
+field = pg.display.set_mode(d_size)
+pg.display.set_caption("Pong")
+
+# You can replace it with pg.font.SysFont(None, 120)
+font = pg.font.SysFont("Alba super", 120)
+scores = pg.font.SysFont("Alba super", 50)
+win = pg.font.SysFont("Alba super", 150)
+title = font.render("P o n g", 0, (50, 50, 50))
+
+
+players_speed = 10
+player_1_size = 100
+player_2_size = 100
+player_1 = pg.Rect((10, 300), (10, player_1_size))
+player_2 = pg.Rect((580, 300), (10, player_2_size))
+
+ball = pg.Rect((300, 300), (10, 10))
+ball_speed = [start(), start()]
+
+while run:
+    for event in pg.event.get():
+        if event.type == pg.QUIT:
+            run = False
+
+        # Movement for players
+        if event.type == pg.KEYDOWN:
+            if event.key == pg.K_UP:
+                player_2.top -= players_speed
+            elif event.key == pg.K_DOWN:
+                player_2.top += players_speed
+
+            if player_2.collidepoint(580, 0):
+                player_2.top += players_speed
+            elif player_2.collidepoint(580, 600):
+                player_2.top -= players_speed
+
+            if event.key == pg.K_w:
+                player_1.top -= players_speed
+            elif event.key == pg.K_s:
+                player_1.top += players_speed
+
+            if player_1.collidepoint(10, 0):
+                player_1.top += players_speed
+            elif player_1.collidepoint(10, 600):
+                player_1.top -= players_speed
+
+    # Color for filling th field
+    field.fill(black)
+
+    # Drawing the ball
+    pg.time.delay(10)
+    pg.draw.rect(field, white, ball)
+
+    # Movement for the ball
+    ball = ball.move(ball_speed)
+    if ball.top < 0 or ball.bottom > d_size[1]:
+        ball_speed[1] = -ball_speed[1]
+    if ball.colliderect(player_2) or ball.colliderect(player_1):
+        ball_speed[0] = -ball_speed[0]
+    if ball.left <= 0:
+        score_player_2 += 1
+        ball_speed[0] = -ball_speed[0]
+    if ball.right >= d_size[0]:
+        score_player_1 += 1
+        ball_speed[0] = -ball_speed[0]
+
+    # Drawing players
+    pg.draw.line(field, white, (300, 10), (300, 590))
+    pg.draw.rect(field, white, player_1)
+    pg.draw.rect(field, white, player_2)
+
+    # Text
+    if score_player_2 >= 7:
+        wins = win.render("2 Wins", 0, white)
+        field.blit(wins, (95, 150))
+    elif score_player_1 >= 7:
+        wins = win.render("1 Wins", 0, white)
+        field.blit(wins, (95, 150))
+    else:
+        score1 = scores.render(str(score_player_1), 0, white)
+        score2 = scores.render(str(score_player_2), 0, white)
+        field.blit(score1, (250, 5))
+        field.blit(score2, (310, 5))
+        field.blit(title, (95, 150))
+    pg.display.flip()
+pg.quit()
